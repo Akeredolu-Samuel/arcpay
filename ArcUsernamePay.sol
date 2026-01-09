@@ -12,8 +12,8 @@ interface IERC20 {
  * Perfect for Arc's "Economic OS" vision - making payments social and easy!
  */
 contract ArcUsernamePay {
-    // USDC contract address on Arc Testnet
-    address public constant USDC_ADDRESS = 0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d;
+    // USDC contract address on Arc Testnet (Native USDC ERC-20 interface)
+    address public constant USDC_ADDRESS = 0x3600000000000000000000000000000000000000;
     
     IERC20 public usdc;
     

@@ -17,11 +17,11 @@ const ARC_TESTNET_CONFIG = {
     blockExplorerUrls: ['https://testnet.arcscan.app/']
 };
 
-// USDC Contract Address on Arc Testnet
-const USDC_ADDRESS = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
+// USDC Contract Address on Arc Testnet (Native USDC ERC-20 interface)
+const USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
 
 // Your deployed contract address (update after deployment)
-const CONTRACT_ADDRESS = '0x9d12E496e241B8412e0842936E0A0b723b06D5B8';
+const CONTRACT_ADDRESS = '0x762C5be576CAFB489457b8426a7eF9C653328fbb';
 
 // Contract ABI
 const CONTRACT_ABI = [
@@ -219,7 +219,21 @@ async function sendPayment() {
     try {
         const amountInSmallestUnit = ethers.utils.parseUnits(amount, 6);
 
-        // Check allowance
+        // 1. Check if recipient exists
+        const recipientAddress = await contract.getAddress(recipient);
+        if (recipientAddress === ethers.constants.AddressZero) {
+            showStatus('sendStatus', 'error', `❌ Username @${recipient} not found on this contract. They must register first!`);
+            return;
+        }
+
+        // 2. Check USDC Balance
+        const balance = await usdcContract.balanceOf(userAddress);
+        if (balance.lt(amountInSmallestUnit)) {
+            showStatus('sendStatus', 'error', `❌ Insufficient USDC. You have ${ethers.utils.formatUnits(balance, 6)} USDC.`);
+            return;
+        }
+
+        // 3. Check allowance
         const allowance = await usdcContract.allowance(userAddress, CONTRACT_ADDRESS);
         if (allowance.lt(amountInSmallestUnit)) {
             showStatus('sendStatus', 'loading', 'Step 1/2: Approving USDC...');
