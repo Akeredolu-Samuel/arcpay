@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test - Arc Pay</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+        }
+
+        .success {
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+
+        .error {
+            border-color: #f87171;
+            color: #f87171;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #a864fd, #e86298);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        pre {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔧 Arc Pay Connection Test</h1>
+    <p>This page will help debug the wallet connection issue.</p>
+
+    <div id="status"></div>
+
+    <button onclick="testMetaMask()">1. Test Wallet</button>
+    <button onclick="checkBalance()">2. Check Gas Balance</button>
+    <button onclick="testConnection()">3. Test Full Connection</button>
+    <button onclick="testContract()">4. Test Contract</button>
+    <button onclick="window.location.href='index.html'">← Back to App</button>
+
+    <div id="output"></div>
+
+    <!-- Load ethers.js from LOCAL file -->
+    <script src="ethers.min.js" type="text/javascript"></script>
+
+    <script>
+        // Configuration
+        const CONTRACT_ADDRESS = '0x9d12E496e241B8412e0842936E0A0b723b06D5B8';
+        const USDC_ADDRESS = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
+
+        // Wait for ethers.js to load
+        function waitAndInit() {
+            if (typeof ethers === 'undefined') {
+                console.log('⏳ Waiting for ethers.js...');
+                setTimeout(waitAndInit, 50);
+                return;
+            }
+
+            console.log('✅ Ethers.js loaded successfully:', ethers.version);
+            log('🚀 Test page ready. Ethers.js v' + ethers.version + ' loaded. Click buttons above to test.');
+        }
+
+        function log(message, isError = false) {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = isError ? 'status error' : 'status success';
+            div.innerHTML = '<strong>' + new Date().toLocaleTimeString() + '</strong>: ' + message;
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        async function testMetaMask() {
+            document.getElementById('output').innerHTML = '';
+            log('🔍 Testing wallet connection...');
+
+            if (typeof window.ethereum === 'undefined') {
+                log('❌ No Web3 wallet installed!', true);
+                return false;
+            }
+
+            // Detect wallet
+            let walletName = 'Web3 Wallet';
+            if (window.ethereum.isMetaMask) walletName = 'MetaMask';
+            else if (window.ethereum.isRabby) walletName = 'Rabby';
+            else if (window.ethereum.isCoinbaseWallet) walletName = 'Coinbase Wallet';
+
+            log('✅ ' + walletName + ' is installed');
+
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                log('✅ Account connected: ' + accounts[0]);
+
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const network = await provider.getNetwork();
+                log('✅ Network: ' + network.name + ' (Chain ID: ' + network.chainId + ')');
+
+                if (network.chainId !== 5042002) {
+                    log('⚠️ Not on Arc Testnet! Click to switch...', true);
+                    await switchNetwork();
+                } else {
+                    log('✅ Already on Arc Testnet!');
+                }
+
+                return true;
+            } catch (error) {
+                log('❌ Error: ' + error.message, true);
+                return false;
+            }
+        }
+
+        async function checkBalance() {
+            try {
+                log('💰 Checking Native Balance...');
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                const address = await signer.getAddress();
+                const balance = await provider.getBalance(address);
+                const ethBalance = ethers.utils.formatEther(balance);
+
+                log(`👛 Address: ${address}`);
+                log(`💲 Balance: ${ethBalance} USDC (Native)`);
+
+                if (balance.eq(0)) {
+                    log('⚠️ WARNING: You have 0 Gas! You cannot transact.', true);
+                } else {
+                    log('✅ You have gas to pay for transactions.');
+                }
+            } catch (err) {
+                log('❌ Error checking balance: ' + err.message, true);
+            }
+        }
+
+        async function switchNetwork() {
+            try {
+                log('🔄 Switching to Arc Testnet...');
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x4C1DA2' }],
+                });
+                log('✅ Switched to Arc Testnet!');
+            } catch (switchError) {
+                // Check if error indicates missing chain (code 4902 or specific message)
+                if (switchError.code === 4902 ||
+                    switchError.message.includes("Unrecognized chain ID") ||
+                    switchError.message.includes("Try adding the chain")) {
+                    try {
+                        log('➕ Adding Arc Testnet...');
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0x4C1DA2',
+                                chainName: 'Arc Testnet',
+                                nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+                                rpcUrls: ['https://rpc.testnet.arc.network'],
+                                blockExplorerUrls: ['https://testnet.arcscan.app/']
+                            }],
+                        });
+                        log('✅ Arc Testnet added and switched!');
+                    } catch (addError) {
+                        log('❌ Failed to add network: ' + addError.message, true);
+                    }
+                } else {
+                    log('❌ Failed to switch: ' + switchError.message, true);
+                }
+            }
+        }
+
+        async function testConnection() {
+            document.getElementById('output').innerHTML = '';
+            log('🧪 Running full connection test...');
+
+            const hasWallet = await testMetaMask();
+            if (!hasWallet) return;
+
+            log('---');
+            log('📋 Configuration:');
+            log('Contract: ' + CONTRACT_ADDRESS);
+            log('USDC: ' + USDC_ADDRESS);
+        }
+
+        async function testContract() {
+            document.getElementById('output').innerHTML = '';
+            log('🔍 Testing contract...');
+
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                const address = await signer.getAddress();
+
+                log('✅ Signer address: ' + address);
+
+                const contractABI = [
+                    "function getUsername(address userAddress) external view returns (string memory)"
+                ];
+
+                const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
+                log('✅ Contract initialized');
+
+                const username = await contract.getUsername(address);
+                if (username && username.length > 0) {
+                    log('✅ Your username: @' + username);
+                } else {
+                    log('ℹ️ No username registered yet');
+                }
+
+                log('✅ Contract is working!');
+            } catch (error) {
+                log('❌ Contract error: ' + error.message, true);
+                console.error(error);
+            }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', waitAndInit);
+        } else {
+            waitAndInit();
+        }
+    </script>
+</body>
+
+</html>

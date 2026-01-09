@@ -1,0 +1,14 @@
+# Environment variables (contains private keys!)
+.env
+
+# Foundry
+cache/
+out/
+broadcast/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

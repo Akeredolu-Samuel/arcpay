@@ -1,0 +1,37 @@
+/* Existing styles override / addition */
+
+.btn-disconnect {
+    background: transparent;
+    border: 1px solid #ff4444;
+    color: #ff4444;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: none; /* Hidden by default */
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    margin-left: 10px;
+}
+
+.btn-disconnect:hover {
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+}
+
+/* Make status messages allow links */
+.status-message a {
+    color: inherit;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.status-message a:hover {
+    opacity: 0.8;
+}

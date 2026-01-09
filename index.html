@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arc Pay - Send USDC by Username</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <h1>Arc<span class="highlight">Pay</span></h1>
+            </div>
+            <div class="header-actions">
+                <!-- Disconnect is now handled inside the main button -->
+                <button id="connectWallet" class="btn-connect">
+                    <span class="wallet-icon">👛</span>
+                    <span id="walletText">Connect Wallet</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Username Registration Card -->
+            <div class="card" id="registerCard">
+                <div class="card-header">
+                    <h2>🎯 Register Your Username</h2>
+                    <p class="subtitle">Claim your unique @username on Arc</p>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <span class="input-prefix">@</span>
+                        <input type="text" id="usernameInput" placeholder="yourname" maxlength="20"
+                            class="input-field" />
+                    </div>
+                    <button id="registerBtn" class="btn-primary">
+                        Register Username
+                    </button>
+                    <div id="registerStatus" class="status-message"></div>
+                </div>
+            </div>
+
+            <!-- Send Payment Card -->
+            <div class="card" id="sendCard">
+                <div class="card-header">
+                    <h2>💸 Send USDC</h2>
+                    <p class="subtitle">Pay anyone by their username</p>
+                </div>
+                <div class="card-body">
+                    <div class="current-username" id="currentUsername">
+                        <span class="label">Your username:</span>
+                        <span class="username-badge" id="yourUsername">Not registered</span>
+                    </div>
+
+                    <div class="input-group">
+                        <span class="input-prefix">@</span>
+                        <input type="text" id="recipientUsername" placeholder="recipient" class="input-field" />
+                    </div>
+
+                    <div class="input-group">
+                        <span class="input-prefix">$</span>
+                        <input type="number" id="amountInput" placeholder="0.00" step="0.01" min="0"
+                            class="input-field" />
+                        <span class="input-suffix">USDC</span>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="messageInput" placeholder="What's this for? (optional)"
+                            class="input-field" />
+                    </div>
+
+                    <button id="sendBtn" class="btn-primary">
+                        Send Payment
+                    </button>
+                    <div id="sendStatus" class="status-message"></div>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="info-card">
+                <h3>ℹ️ How It Works</h3>
+                <ol class="info-list">
+                    <li>Connect your Web3 wallet (MetaMask, Rabby, etc.) to Arc Testnet</li>
+                    <li>Register your unique @username</li>
+                    <li>Send USDC to anyone by typing their @username</li>
+                    <li>No need to copy/paste long wallet addresses!</li>
+                </ol>
+                <div class="network-info">
+                    <p><strong>Network:</strong> Arc Testnet</p>
+                    <p><strong>Gas Token:</strong> USDC</p>
+                    <p><strong>Contract:</strong> <span id="contractAddress" class="mono">Not deployed</span></p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built for Arc's Economic OS 🚀 | Powered by Circle USDC</p>
+        </footer>
+    </div>
+
+    <!-- Load ethers.js from LOCAL file (no internet needed!) -->
+    <script src="ethers.min.js" type="text/javascript"></script>
+
+    <!-- Wait for ethers to load, then load app.js -->
+    <script>
+        // Ensure ethers is loaded before continuing
+        function waitForEthers() {
+            if (typeof ethers !== 'undefined') {
+                console.log('✅ Ethers.js loaded successfully:', ethers.version);
+                // Load app.js after ethers is ready
+                const script = document.createElement('script');
+                script.src = 'app.js';
+                document.body.appendChild(script);
+            } else {
+                console.log('⏳ Waiting for ethers.js...');
+                setTimeout(waitForEthers, 100);
+            }
+        }
+        waitForEthers();
+    </script>
+</body>
+
+</html>

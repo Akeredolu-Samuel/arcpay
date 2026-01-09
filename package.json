@@ -1,0 +1,17 @@
+{
+  "name": "arc_pay",
+  "version": "1.0.0",
+  "description": "> Send USDC on Arc Testnet using just a username - no wallet addresses needed!",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "dotenv": "^17.2.3",
+    "ethers": "^5.7.2"
+  }
+}
